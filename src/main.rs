@@ -57,9 +57,9 @@ fn pecho(input: Form<EchoInput<'_>>) -> content::RawHtml<String> {
 }
 
 #[get("/gadd?<first>&<second>")]
-fn gadd(first: String, second: String) -> content::RawHtml<String> {
+fn gadd(first: u8, second: u8) -> content::RawHtml<String> {
     rocket::info!("Received: {first:?} {second:?}");
-    let result = first.parse::<u32>().unwrap() + second.parse::<u32>().unwrap();
+    let result = first + second;
     content::RawHtml(format!("Add: {first} + {second} = <b>{result}</b>"))
 }
 
