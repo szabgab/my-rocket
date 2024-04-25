@@ -1,18 +1,41 @@
 #[macro_use]
 extern crate rocket;
 
+use rocket::form::Form;
 use rocket::response::content;
 
 #[get("/")]
 fn index() -> content::RawHtml<&'static str> {
     rocket::info!("some info message");
-    content::RawHtml(r#"<form action="/echo">
+    content::RawHtml(
+        r#"
+    <h2>Echo GET</h2>
+    <form action="/gecho">
     <input name="text">
     <input type="submit" value="Echo">
     </form>
-    "#)
+
+    <h2>Echo POST</h2>
+    <form action="/pecho" method="POST">
+    <input name="msg">
+    <input type="submit" value="Echo">
+    </form>
+
+    <hr>
+    <h2>Add</h2>
+    <form action="/add" method="POST">
+    <input name="first"><input name="second">
+    <input type="submit" value="Add">
+    </form>
+
+    "#,
+    )
 }
 
+#[derive(FromForm)]
+struct EchoInput<'r> {
+    msg: &'r str,
+}
 
 #[get("/hello")]
 fn hello() -> content::RawHtml<&'static str> {
@@ -20,18 +43,29 @@ fn hello() -> content::RawHtml<&'static str> {
     content::RawHtml("Hello, world!")
 }
 
-#[get("/echo?<text>")]
-fn echo(text: String) -> content::RawHtml<String> {
+#[get("/gecho?<text>")]
+fn gecho(text: String) -> content::RawHtml<String> {
     rocket::info!("Received: {text:?}");
     content::RawHtml(format!("Echo: <b>{text}</b>"))
 }
 
+#[post("/pecho", data = "<input>")]
+fn pecho(input: Form<EchoInput<'_>>) -> content::RawHtml<String> {
+    rocket::info!("Received: {:?}", input.msg);
+    content::RawHtml(format!("Echo: <b>{}</b>", input.msg))
+}
+
+// #[post("/add", data = "<first>")]
+// fn add(first: String, second: String) -> content::RawHtml<String> {
+//     rocket::info!("Received: {first:?} {second:?}");
+//     let result = first + second;
+//     content::RawHtml(format!("Echo: <b>{result}</b>"))
+// }
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![index, hello, echo])
+    rocket::build().mount("/", routes![index, hello, gecho, pecho])
 }
-
 
 #[cfg(test)]
 mod tests;
