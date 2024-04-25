@@ -22,9 +22,10 @@ fn index() -> content::RawHtml<&'static str> {
     </form>
 
     <hr>
-    <h2>Add</h2>
-    <form action="/add" method="POST">
-    <input name="first"><input name="second">
+    <h2>Add GET</h2>
+    <form action="/gadd">
+    <input name="first">
+    <input name="second">
     <input type="submit" value="Add">
     </form>
 
@@ -55,16 +56,16 @@ fn pecho(input: Form<EchoInput<'_>>) -> content::RawHtml<String> {
     content::RawHtml(format!("Echo: <b>{}</b>", input.msg))
 }
 
-// #[post("/add", data = "<first>")]
-// fn add(first: String, second: String) -> content::RawHtml<String> {
-//     rocket::info!("Received: {first:?} {second:?}");
-//     let result = first + second;
-//     content::RawHtml(format!("Echo: <b>{result}</b>"))
-// }
+#[get("/gadd?<first>&<second>")]
+fn gadd(first: String, second: String) -> content::RawHtml<String> {
+    rocket::info!("Received: {first:?} {second:?}");
+    let result = first.parse::<u32>().unwrap() + second.parse::<u32>().unwrap();
+    content::RawHtml(format!("Add: {first} + {second} = <b>{result}</b>"))
+}
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![index, hello, gecho, pecho])
+    rocket::build().mount("/", routes![index, hello, gecho, pecho, gadd])
 }
 
 #[cfg(test)]
