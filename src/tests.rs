@@ -36,3 +36,23 @@ fn test_pecho() {
     assert_eq!(response.status(), Status::Ok);
     assert_eq!(response.into_string(), Some("Echo: <b>Foo Bar</b>".into()));
 }
+
+
+
+#[test]
+fn test_gcalc() {
+    let client = Client::tracked(super::rocket()).unwrap();
+    let response = client.get("/gcalc?first=2&second=3&operator=add").dispatch();
+    assert_eq!(response.status(), Status::Ok);
+    assert_eq!(response.into_string(), Some("GET Calc: 2 + 3 = <b>5</b>".into()));
+
+    let response = client.get("/gcalc?first=2&second=3&operator=multiply").dispatch();
+    assert_eq!(response.status(), Status::Ok);
+    assert_eq!(response.into_string(), Some("GET Calc: 2 * 3 = <b>6</b>".into()));
+
+    let response = client.get("/gcalc?first=2&second=3&operator=qqrq").dispatch();
+    assert_eq!(response.status(), Status::Ok);
+    assert_eq!(response.into_string(), Some("Invalid input \"qqrq\"".into()));
+}
+
+

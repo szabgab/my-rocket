@@ -50,6 +50,20 @@ fn index() -> content::RawHtml<&'static str> {
     <input type="submit" value="Add">
     </form>
 
+    <hr>
+    <h2>Calc GET</h2>
+    <form action="/gcalc" method="GET">
+    <input name="first">
+    <input name="second">
+    <select name="operator">
+    <option></option>
+    <option value="add">ADD</option>
+    <option value="multiply">Multiply</option>
+    </select>
+    <input type="submit" value="Calc">
+    </form>
+
+
     "#,
     )
 }
@@ -80,6 +94,21 @@ fn gadd(first: u8, second: u8) -> content::RawHtml<String> {
     content::RawHtml(format!("GET Add: {first} + {second} = <b>{result}</b>"))
 }
 
+#[get("/gcalc?<first>&<second>&<operator>")]
+fn gcalc(first: u8, second: u8, operator: &str) -> content::RawHtml<String> {
+    rocket::info!("Received: {operator:?} {first:?} {second:?}");
+    let (result, sign) = match operator {
+        "add"  => (first + second, "+"),
+        "multiply"  => (first * second, "*"),
+        _ => (0, ""),
+    };
+    if sign == "" {
+        content::RawHtml(format!("Invalid input {operator:?}"))
+    } else {
+        content::RawHtml(format!("GET Calc: {first} {sign} {second} = <b>{result}</b>"))
+    }
+}
+
 
 #[post("/padd", data="<input>")]
 fn padd(input: Form<AddInput>) -> content::RawHtml<String> {
@@ -90,7 +119,7 @@ fn padd(input: Form<AddInput>) -> content::RawHtml<String> {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![index, hello, gecho, pecho, gadd, padd])
+    rocket::build().mount("/", routes![index, hello, gecho, pecho, gadd, padd, gcalc])
 }
 
 #[cfg(test)]
